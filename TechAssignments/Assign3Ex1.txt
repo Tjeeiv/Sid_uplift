@@ -1,0 +1,6 @@
+Python is an easy programming language. It is widely used in data science
+File handling is an important concept
+We can read and write files in Python.
+This file contains simple text lines
+Each line can be processed separately.
+Practicing makes coding easier. Learning Python is fun.
