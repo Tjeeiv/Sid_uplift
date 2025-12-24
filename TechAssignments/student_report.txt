@@ -1,0 +1,20 @@
+=== STUDENT GRADE REPORT ===
+
+Student: Alice (ID: S001)
+  Test Average: 90.00
+  Project Average: 80.00
+  Attendance: 90.0%
+  Final Score: 87.50
+  Letter Grade: B
+
+Student: Jon (ID: S002)
+  Test Average: 70.00
+  Project Average: 60.00
+  Attendance: 70.0%
+  Final Score: 67.50
+  Letter Grade: D
+
+Class Statistics:
+  Class Average: 77.50
+  Top 3: Alice (87.50), Jon (67.50)
+  At Risk: None
