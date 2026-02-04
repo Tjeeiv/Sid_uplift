@@ -1,0 +1,152 @@
+SQL Questions
+
+--------------------------------------------------
+
+Question 1: Monthly Sales Query
+
+    Write an SQL query to retrieve the monthly sales summary
+    from the ORDERS table.
+
+    The query should:
+        - Display the order month and year
+        - Calculate the total number of orders per month
+        - Calculate the total revenue per month
+        - Calculate the average order value per month
+        - Sort the result by month in ascending order
+
+select  
+    month(  order_Date  ) as "Month", 
+    year(  order_Date   ) AS "Year",
+    count(Order_id) as "NoOfOrders" ,
+    SUM(TOTAL_AMOUNT) as "TotalRevenuePerMonth",
+    round( AVG(TOTAL_AMOUNT) ,2) as "AverageOrderValuePerMonth"
+from orders
+group by month(  order_Date ) ,   year(  order_Date )
+order by "Year" ,"Month";
+--------------------------------------------------
+
+Question 2: City-wise Customer and Order Query
+
+    Write an SQL query using the CUSTOMERS and ORDERS tables
+    to display city-wise and state-wise statistics.
+
+    The query should:
+        - Show city and state
+        - Count the total number of distinct customers
+        - Count the total number of orders
+        - Calculate the total revenue per city
+        - Include customers who have not placed any orders
+        - Sort the result by total revenue in descending order
+
+select 
+    c.city,
+    c.state,
+    count(distinct c.customer_id) as noofdistinctcustomer,
+    count(o.order_id) as orders,
+    coalesce(sum(o.total_amount),0) as revenuepercity 
+from customers c
+left join orders o on c.customer_id = o.customer_id
+group by   c.state, c.city  
+order by revenuepercity desc
+
+--------------------------------------------------
+
+Question 3: Product Category Performance Query
+
+    Write an SQL query using the PRODUCTS and ORDER_ITEMS tables
+    to analyze product category performance.
+
+    The query should:
+        - Display product category
+        - Count the number of distinct products in each category
+        - Calculate the total units sold per category
+        - Calculate total revenue per category
+        - Include categories with no sales
+        - Sort the result by revenue in descending order
+
+select 
+    p.Category,
+    count(distinct p.product_id) as NoOfProducts,
+    COALESCE(SUM(oi.quantity), 0) AS UnitsSold,
+    COALESCE(SUM(oi.quantity * oi.unit_price), 0) AS TotalRevenue
+from PRODUCTS p
+left join order_items oi on p.product_id = oi.product_id
+group  by p.category
+--------------------------------------------------
+
+Question 4: Customer Purchase History Query
+
+    Write an SQL query to display the complete purchase history
+    of a customer named "Amit Kumar".
+
+    The query should:
+        - Retrieve customer details, order details, and product details
+        - Display product quantity, unit price, and line total
+        - Include order status
+        - Sort the results by order date in descending order
+
+select 
+    c.customer_name,
+    c.email,
+    c.city,
+    c.state,
+
+    o.order_id,
+    o.order_date,
+    o.status,
+
+    p.product_name,
+    p.category,
+
+    oi.quantity,
+    oi.unit_price,
+    (oi.quantity * oi.unit_price) AS line_total
+
+from customers c 
+inner join orders o on o.customer_id = c.customer_id
+inner join order_items oi on oi.order_id  = o.order_id
+inner join products p on p.product_id = oi.product_id
+where c.customer_name = 'Amit Kumar'
+order by o.order_date desc;
+
+--------------------------------------------------
+
+Question 5: Pending Orders Query
+
+    Write an SQL query to list all orders that are pending delivery.
+
+    The query should:
+        - Include orders with statuses Processing and Shipped
+        - Display order details along with customer name, email, and city
+        - Sort the results by order date
+
+select 
+o.*,
+c.customer_name,
+c.email,
+c.city
+from orders o 
+inner join customers c on c.customer_id = o.customer_id
+where o.status in ('Shipped','Processing')
+order by o.order_date desc;
+--------------------------------------------------
+
+Question 6: Product Inventory Value Query
+
+    Write an SQL query to calculate the inventory value for each
+    product in the PRODUCTS table.
+
+    The query should:
+        - Display product name, category, price, and stock quantity
+        - Calculate inventory value for each product
+        - Include only products with available stock
+        - Sort the result by inventory value in descending order
+select  
+    PRODUCT_NAME,
+    CATEGORY,
+    PRICE,
+    STOCK_QUANTITY,
+    STOCK_QUANTITY * PRICE AS INVENTORYVALUE
+from products P
+WHERE STOCK_QUANTITY >0
+ORDER BY INVENTORYVALUE DESC
