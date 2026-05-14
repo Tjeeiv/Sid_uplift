@@ -1,3 +1,4 @@
+import os
 import shutil
 import streamlit as st
 from gradio_client import Client
@@ -8,28 +9,21 @@ st.caption("Powered by Stable Cascade on Hugging Face")
 
 prompt = st.text_area("Prompt", placeholder="A futuristic city at sunset, cinematic lighting...", height=120)
 negative_prompt = st.text_input("Negative Prompt (optional)", placeholder="blurry, low quality, distorted")
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    width = st.selectbox("Width", [512, 768, 1024], index=2)
-with col2:
-    height = st.selectbox("Height", [512, 768, 1024], index=2)
-with col3:
-    seed = st.number_input("Seed (0 = random)", min_value=0, max_value=999999, value=0)
+ 
 
 if st.button("✨ Generate Image", use_container_width=True):
     if prompt.strip() == "":
         st.warning("Please enter a prompt first.")
     else:
-        with st.spinner("Connecting to Stable Cascade and generating your image..."):
+        with st.spinner("Generating your image..."):
             try:
                 client = Client("multimodalart/stable-cascade")
                 result = client.predict(
                     prompt=prompt,
                     negative_prompt=negative_prompt,
-                    seed=seed,
-                    width=width,
-                    height=height,
+                    seed=0,
+                    width=1024,
+                    height=1024,
                     prior_num_inference_steps=20,
                     prior_guidance_scale=4.0,
                     decoder_num_inference_steps=10,
@@ -38,15 +32,26 @@ if st.button("✨ Generate Image", use_container_width=True):
                     api_name="/run"
                 )
 
-                # result is a list; each item is a dict with 'image' key or a file path
-                if isinstance(result, list) and len(result) > 0:
-                    item = result[0]
-                    if isinstance(item, dict):
-                        image_path = item.get("image") or item.get("path") or list(item.values())[0]
-                    else:
-                        image_path = item
+                # Robustly extract image path from result
+                image_path = None
 
-                    output_path = "generated_image.png"
+                if isinstance(result, (list, tuple)) and len(result) > 0:
+                    item = result[0]
+                    if isinstance(item, (list, tuple)) and len(item) > 0:
+                        item = item[0]  # handle nested list [[{...}]]
+                    if isinstance(item, dict):
+                        image_path = item.get("image") or item.get("path") or item.get("url") or list(item.values())[0]
+                    elif isinstance(item, str):
+                        image_path = item
+                elif isinstance(result, dict):
+                    image_path = result.get("image") or result.get("path") or list(result.values())[0]
+                elif isinstance(result, str):
+                    image_path = result
+
+                if image_path:
+                    # Save image in the same folder as app.py
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    output_path = os.path.join(script_dir, "generated_image.png")
                     shutil.copy(image_path, output_path)
 
                     st.success("Image generated!")
@@ -61,7 +66,7 @@ if st.button("✨ Generate Image", use_container_width=True):
                             use_container_width=True
                         )
                 else:
-                    st.error("No image returned. Try again.")
+                    st.error(f"Could not extract image. Raw result: {result}")
 
             except Exception as e:
                 st.error(f"Error: {e}")
