@@ -4,14 +4,14 @@ import streamlit as st
 from gradio_client import Client
 
 st.set_page_config(page_title="Text → Image", page_icon="🎨")
-st.title("🎨 Text → Image")
+st.title("Text → Image")
 st.caption("Powered by Stable Cascade on Hugging Face")
 
 prompt = st.text_area("Prompt", placeholder="A futuristic city at sunset, cinematic lighting...", height=120)
 negative_prompt = st.text_input("Negative Prompt (optional)", placeholder="blurry, low quality, distorted")
  
 
-if st.button("✨ Generate Image", use_container_width=True):
+if st.button("Generate Image", use_container_width=True):
     if prompt.strip() == "":
         st.warning("Please enter a prompt first.")
     else:
@@ -57,14 +57,7 @@ if st.button("✨ Generate Image", use_container_width=True):
                     st.success("Image generated!")
                     st.image(output_path, caption=prompt, use_container_width=True)
 
-                    with open(output_path, "rb") as f:
-                        st.download_button(
-                            label="⬇️ Download Image",
-                            data=f,
-                            file_name="stable_cascade_output.png",
-                            mime="image/png",
-                            use_container_width=True
-                        )
+                    
                 else:
                     st.error(f"Could not extract image. Raw result: {result}")
 
